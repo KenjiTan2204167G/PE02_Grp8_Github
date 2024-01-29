@@ -1,61 +1,87 @@
-﻿@page "/ScreentimeUsage"
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Screentime Usage</title>
+</head>
+<body>
 
-<PageTitle>Screentime Usage</PageTitle>
+    @page "/ScreentimeUsage"
 
-<h1>Enter your time spent on the website</h1>
+    <PageTitle>Screentime Usage</PageTitle>
 
-<label for="website">Website Link:</label>
-<input type="text" id="website" placeholder="Enter website link">
+    <h1>Enter your time spent on the website</h1>
 
-<label for="time">Time Spent (minutes):</label>
-<input type="number" id="time" placeholder="Enter time spent">
+    <label for="website">Website Link:</label>
+    <input type="text" id="website" placeholder="Enter website link">
 
-<button onclick="submitData()">Submit</button>
+    <label for="time">Time Spent (minutes):</label>
+    <input type="number" id="time" placeholder="Enter time spent">
 
-<div id="error-message" style="color: red;"></div>
+    <button id="submit-btn">Submit</button>
 
-<script>
-    function submitData() {
-        // Get values from the input fields
-        var website = document.getElementById('website').value;
-        var time = document.getElementById('time').value;
+    <div id="error-message" style="color: red;"></div>
+    <script>
+        document.getElementById('submit-btn').addEventListener('click', submitData);
 
-        // Clear previous error messages
-        document.getElementById('error-message').innerText = '';
+        function submitData() {
+            var website = document.getElementById('website').value;
+            var time = document.getElementById('time').value;
+            var errorMessage = document.getElementById('error-message');
+            errorMessage.innerText = '';
 
-        // Simple URL validation
-        if (!isValidUrl(website) || isNaN(time) || time <= 0) {
-            alert('Invalid data entry');
-            return;
+            if (!isValidUrl(website)) {
+                errorMessage.innerText = 'Invalid URL. Please enter a valid website link.';
+                return;
+            }
+
+            if (!isValidNumber(time)) {
+                errorMessage.innerText = 'Invalid time entry. Please enter a valid number for time spent (in minutes).';
+                return;
+            }
+
+            sendDataToServer({ website, time });
+            // Clear input fields after submission
+            document.getElementById('website').value = '';
+            document.getElementById('time').value = '';
         }
 
-        // Assuming you have a function to send data to the server
-        sendDataToServer({ website, time });
-    }
+        function isValidUrl(string) {
+            try {
+                new URL(string);
+            } catch (_) {
+                return false;
+            }
+            return true;
+        }
 
-    function isValidUrl(url) {
-        // Basic URL validation using a regular expression
-        var urlRegex = /^(http|https):\/\/[^ "]+$/;
-        return urlRegex.test(url);
-    }
+        function isValidNumber(value) {
+            return !isNaN(parseFloat(value)) && isFinite(value) && value > 0;
+        }
 
-    function sendDataToServer(data) {
-        // Assuming you have a function or AJAX to send data to the server
-        // Example using fetch API
-        fetch('/api/storeData', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(data),
-        })
-            .then(response => response.json())
-            .then(data => {
-                // Handle response from the server (if needed)
-                console.log('Data stored successfully:', data);
+        function sendDataToServer(data) {
+            fetch('/api/storeData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(data),
             })
-            .catch(error => {
-                console.error('Error storing data:', error);
-            });
-    }
-</script>
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    console.log('Data stored successfully:', data);
+                })
+                .catch(error => {
+                    console.error('Error storing data:', error);
+                });
+        }
+    </script>
+
+</body>
+</html>
