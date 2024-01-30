@@ -10,8 +10,26 @@ namespace Screentime_Tracker.Server.Data
     {
         public ApplicationDbContext(
             DbContextOptions options,
-            IOptions<OperationalStoreOptions> operationalStoreOptions) : base(options, operationalStoreOptions)
+            IOptions<OperationalStoreOptions> operationalStoreOptions)
+            : base(options, operationalStoreOptions)
         {
         }
+
+        public DbSet<ScreentimeEntry> ScreentimeEntries { get; set; }
+        // Other DbSet properties...
+
+        // If you have any additional configuration for your models, you can override the OnModelCreating method
+        protected override void OnModelCreating(ModelBuilder builder)
+        {
+            base.OnModelCreating(builder);
+
+            // Example of additional configuration
+            builder.Entity<ScreentimeEntry>(entity =>
+            {
+                // Additional configuration like setting table name, constraints, etc.
+            });
+        }
     }
+
 }
+

@@ -5,49 +5,49 @@
 @attribute [Authorize]
 @inject HttpClient Http
 
-<PageTitle>Weather forecast</PageTitle>
+<PageTitle>Screentime Data</PageTitle>
 
-<h1>Weather forecast</h1>
+<h1>Screentime Data</h1>
 
-<p>This component demonstrates fetching data from the server.</p>
+<p>This component demonstrates fetching your screentime data from the server.</p>
 
-@if (forecasts == null)
+@if (screentimeEntries == null)
 {
     <p><em>Loading...</em></p>
 }
-else
+else if (screentimeEntries.Any())
 {
     <table class="table">
         <thead>
             <tr>
-                <th>Date</th>
-                <th>Temp. (C)</th>
-                <th>Temp. (F)</th>
-                <th>Summary</th>
+                <th>Website Link</th>
+                <th>Time Spent (minutes)</th>
             </tr>
         </thead>
         <tbody>
-            @foreach (var forecast in forecasts)
+            @foreach (var entry in screentimeEntries)
             {
                 <tr>
-                    <td>@forecast.Date.ToShortDateString()</td>
-                    <td>@forecast.TemperatureC</td>
-                    <td>@forecast.TemperatureF</td>
-                    <td>@forecast.Summary</td>
+                    <td>@entry.WebsiteLink</td>
+                    <td>@entry.TimeSpent</td>
                 </tr>
             }
         </tbody>
     </table>
 }
+else
+{
+    <p>No screentime data to display.</p>
+}
 
 @code {
-    private WeatherForecast[]? forecasts;
+    private ScreentimeEntryDto[]? screentimeEntries;
 
     protected override async Task OnInitializedAsync()
     {
         try
         {
-            forecasts = await Http.GetFromJsonAsync<WeatherForecast[]>("WeatherForecast");
+            screentimeEntries = await Http.GetFromJsonAsync<ScreentimeEntryDto[]>("Screentime");
         }
         catch (AccessTokenNotAvailableException exception)
         {

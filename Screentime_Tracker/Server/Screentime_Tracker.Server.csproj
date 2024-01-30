@@ -8,6 +8,14 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Remove="Controllers\ScreentimeController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="Controllers\ScreentimeController.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Components.WebAssembly.Server" Version="7.0.13" />
   </ItemGroup>
 

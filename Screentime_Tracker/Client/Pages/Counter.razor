@@ -1,87 +1,43 @@
-﻿<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Screentime Usage</title>
-</head>
-<body>
+﻿@page "/ScreentimeUsage"
+@using Screentime_Tracker.Shared
+@inject HttpClient Http
 
-    @page "/ScreentimeUsage"
+<PageTitle>Screentime Usage</PageTitle>
 
-    <PageTitle>Screentime Usage</PageTitle>
+<h1>Enter your time spent on the website</h1>
 
-    <h1>Enter your time spent on the website</h1>
+<EditForm Model="@screentimeEntry" OnValidSubmit="HandleValidSubmit">
+    <DataAnnotationsValidator />
+    <ValidationSummary />
 
-    <label for="website">Website Link:</label>
-    <input type="text" id="website" placeholder="Enter website link">
+    <div class="form-group">
+        <label for="website">Website Link:</label>
+        <InputText id="website" @bind-Value="screentimeEntry.WebsiteLink" class="form-control" />
+    </div>
 
-    <label for="time">Time Spent (minutes):</label>
-    <input type="number" id="time" placeholder="Enter time spent">
+    <div class="form-group">
+        <label for="time">Time Spent (minutes):</label>
+        <InputNumber id="time" @bind-Value="screentimeEntry.TimeSpent" class="form-control" />
+    </div>
 
-    <button id="submit-btn">Submit</button>
+    <button type="submit" class="btn btn-primary">Submit</button>
+</EditForm>
 
-    <div id="error-message" style="color: red;"></div>
-    <script>
-        document.getElementById('submit-btn').addEventListener('click', submitData);
+@code {
+    private ScreentimeEntryDto screentimeEntry = new ScreentimeEntryDto();
 
-        function submitData() {
-            var website = document.getElementById('website').value;
-            var time = document.getElementById('time').value;
-            var errorMessage = document.getElementById('error-message');
-            errorMessage.innerText = '';
-
-            if (!isValidUrl(website)) {
-                errorMessage.innerText = 'Invalid URL. Please enter a valid website link.';
-                return;
-            }
-
-            if (!isValidNumber(time)) {
-                errorMessage.innerText = 'Invalid time entry. Please enter a valid number for time spent (in minutes).';
-                return;
-            }
-
-            sendDataToServer({ website, time });
-            // Clear input fields after submission
-            document.getElementById('website').value = '';
-            document.getElementById('time').value = '';
+    private async Task HandleValidSubmit()
+    {
+        var response = await Http.PostAsJsonAsync("screentime", screentimeEntry);
+        if (response.IsSuccessStatusCode)
+        {
+            Console.WriteLine("Data stored successfully");
+            screentimeEntry = new ScreentimeEntryDto(); // Reset the form
         }
-
-        function isValidUrl(string) {
-            try {
-                new URL(string);
-            } catch (_) {
-                return false;
-            }
-            return true;
+        else
+        {
+            var errorContent = await response.Content.ReadAsStringAsync();
+            Console.WriteLine($"Error storing data: {errorContent}");
         }
-
-        function isValidNumber(value) {
-            return !isNaN(parseFloat(value)) && isFinite(value) && value > 0;
-        }
-
-        function sendDataToServer(data) {
-            fetch('/api/storeData', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify(data),
-            })
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                })
-                .then(data => {
-                    console.log('Data stored successfully:', data);
-                })
-                .catch(error => {
-                    console.error('Error storing data:', error);
-                });
-        }
-    </script>
-
-</body>
-</html>
+    }
+}
